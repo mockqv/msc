@@ -1,5 +1,5 @@
 {
-  "version": "1.2.2.1",
+  "version": "1.2.3",
   "repository_url": "https://github.com/mockqv/msc",
   "settings": {
     "language": "en"
@@ -120,7 +120,22 @@
       "commit_invalid_emoji": "Invalid emoji code. Please use a valid GitHub emoji code (e.g., :sparkles:).",
       "commit_type_exists": "Commit type '{type}' already exists. Please choose a different type.",
       "commit_type_not_found": "Commit type not found.",
-      "emoji_guide_hint": "# If you have doubts about emojis, look in EmojiFlags.MD"
+      "emoji_guide_hint": "# If you have doubts about emojis, look in EmojiFlags.MD",
+      "installer_welcome": "Welcome to the My Semantic Commit (MSC) installer!",
+      "installer_prerequisites": "1. Checking for prerequisites...",
+      "installer_prerequisites_ok": "Prerequisites are satisfied.",
+      "installer_dependencies": "2. Installing dependencies...",
+      "installer_configuring": "3. Configuring settings...",
+      "installer_config_updated": "Configuration file updated.",
+      "installer_config_merged": "Existing configuration found. Merging new settings.",
+      "installer_language_prompt": "Please choose your language:",
+      "installer_language_set": "Language set to '{lang}'.",
+      "installer_executable": "4. Making the main script executable...",
+      "installer_installing": "5. Installing the 'msc' command...",
+      "installer_sudo_required": "Administrator privileges are required to install in {install_dir}.",
+      "installer_success": "Installation successful!",
+      "installer_finished": "You can now use the 'msc' command from anywhere in your terminal.",
+      "installer_try": "Try running: msc --help"
     },
     "pt": {
       "select_commit_type": "Selecione o tipo de commit:",
@@ -186,7 +201,22 @@
       "commit_invalid_emoji": "Código de emoji inválido. Por favor, use um código de emoji válido do GitHub (ex: :sparkles:).",
       "commit_type_exists": "O tipo de commit '{type}' já existe. Por favor, escolha um tipo diferente.",
       "commit_type_not_found": "Tipo de commit não encontrado.",
-      "emoji_guide_hint": "# Se tiver dúvidas sobre emojis, consulte EmojiFlags.MD"
+      "emoji_guide_hint": "# Se tiver dúvidas sobre emojis, consulte EmojiFlags.MD",
+      "installer_welcome": "Bem-vindo ao instalador do My Semantic Commit (MSC)!",
+      "installer_prerequisites": "1. Verificando pré-requisitos...",
+      "installer_prerequisites_ok": "Pré-requisitos satisfeitos.",
+      "installer_dependencies": "2. Instalando dependências...",
+      "installer_configuring": "3. Configurando...",
+      "installer_config_updated": "Arquivo de configuração atualizado.",
+      "installer_config_merged": "Configuração existente encontrada. Mesclando novas configurações.",
+      "installer_language_prompt": "Por favor, escolha seu idioma:",
+      "installer_language_set": "Idioma definido para '{lang}'.",
+      "installer_executable": "4. Tornando o script principal executável...",
+      "installer_installing": "5. Instalando o comando 'msc'...",
+      "installer_sudo_required": "Privilégios de administrador são necessários para instalar em {install_dir}.",
+      "installer_success": "Instalação bem-sucedida!",
+      "installer_finished": "Agora você pode usar o comando 'msc' de qualquer lugar no seu terminal.",
+      "installer_try": "Tente executar: msc --help"
     }
   }
 }
