@@ -48,39 +48,39 @@ def show_help(texts):
     print(f"  msc config --lang <en|pt> - {texts.get('usage_config', 'Change the display language.')}")
     print(f"  msc --help           - {texts.get('usage_help', 'Show this help message.')}")
 
-def handle_add(config, texts):
-    """Handles the 'add' command to interactively stage untracked and modified files."""
+def handle_add(config, texts, add_args):
+    """Handles the 'add' command to interactively or directly stage files."""
     try:
-        # Get untracked and modified files using git status --porcelain
-        result = subprocess.run(
-            ['git', 'status', '--porcelain', '--untracked-files=all'],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        
-        lines = result.stdout.strip().split('\n')
-        # A file can be untracked ('?? ') or modified (' M ').
-        # The slice [3:] correctly grabs the filename in both cases.
-        changed_files = [
-            line[3:] for line in lines if line.startswith(('?? ', ' M '))
-        ]
+        if not add_args:
+            # Interactive mode
+            result = subprocess.run(
+                ['git', 'status', '--porcelain', '--untracked-files=all'],
+                capture_output=True, text=True, check=True
+            )
+            lines = result.stdout.strip().split('\n')
+            changed_files = [line[3:] for line in lines if line.startswith(('?? ', ' M '))]
 
-        if not changed_files:
-            print(texts.get('no_changed_files', "No new or modified files to add."))
-            return
+            if not changed_files:
+                print(texts.get('no_changed_files', "No new or modified files to add."))
+                return
 
-        # Ask user to select files to add
-        selected_files = questionary.checkbox(
-            texts.get('select_files_to_add', "Select files to stage for commit:"),
-            choices=changed_files,
-            instruction=texts.get('select_files_instruction', " ")
-        ).ask()
+            selected_files = questionary.checkbox(
+                texts.get('select_files_to_add', "Select files to stage for commit:"),
+                choices=changed_files,
+                instruction=texts.get('select_files_instruction', " ")
+            ).ask()
 
-        if selected_files:
-            for file_path in selected_files:
-                subprocess.run(['git', 'add', file_path], check=True)
-            print(texts.get('files_added', "Selected files have been staged."))
+            if selected_files:
+                for file_path in selected_files:
+                    subprocess.run(['git', 'add', file_path], check=True)
+                print(texts.get('files_added', "Selected files have been staged."))
+        else:
+            # Direct mode
+            processed_args = ['.' if arg.lower() == 'all' else arg for arg in add_args]
+            command = ['git', 'add'] + processed_args
+            subprocess.run(command, check=True, capture_output=True)
+            files_str = ", ".join(processed_args)
+            print(texts.get('files_added_direct', "Added to stage: {files}").format(files=files_str))
 
     except FileNotFoundError:
         print("Error: 'git' command not found. Is Git installed and in your PATH?")
@@ -193,7 +193,7 @@ def main():
     command = args[0]
 
     if command == "add":
-        handle_add(config, texts)
+        handle_add(config, texts, args[1:])
     elif command == "commit":
         handle_commit(config, texts)
     elif command == "config":
