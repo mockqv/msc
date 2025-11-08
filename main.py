@@ -148,7 +148,7 @@ def handle_push(config, texts):
             warning_message = texts.get('push_warning', "⚠️ You are about to push to the '{branch_name}' branch. Are you sure?").format(branch_name=branch_name)
             
             confirmation = questionary.select(
-                f"{YELLOW}{warning_message}{NC}",
+                warning_message,
                 choices=[
                     questionary.Choice(title=texts.get('push_confirm_yes', "✅ Yes"), value=True),
                     questionary.Choice(title=texts.get('push_confirm_no', "❌ No"), value=False)
@@ -399,28 +399,22 @@ def remove_commit_type(config, texts):
 
 def reset_commit_types(texts):
     """Resets the commit types to the default ones from the repository."""
-    print(f"{YELLOW}DEBUG: Entered reset_commit_types function.{NC}")
     
     confirmation = questionary.confirm(
         texts.get('commit_reset_confirm', "Are you sure you want to reset all commit types to their default values? This cannot be undone."),
         default=False
     ).ask()
 
-    print(f"{YELLOW}DEBUG: Confirmation response: {confirmation}{NC}")
-
     if confirmation:
         try:
             user_config = load_config()
             repo_path = user_config.get('repository_path')
             
-            print(f"{YELLOW}DEBUG: Repo path from config: {repo_path}{NC}")
-
             if not repo_path or not os.path.isdir(repo_path):
                 print(f"{RED}Error: Repository path not found or invalid. Cannot load default config.{NC}")
                 return
             
             default_config_path = os.path.join(repo_path, 'config.json')
-            print(f"{YELLOW}DEBUG: Loading default config from: {default_config_path}{NC}")
 
             with open(default_config_path, 'r') as f:
                 default_config = json.load(f)
