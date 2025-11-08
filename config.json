@@ -1,5 +1,5 @@
 {
-  "version": "1.2.1",
+  "version": "1.2.2",
   "repository_url": "https://github.com/mockqv/msc",
   "settings": {
     "language": "en"
@@ -102,8 +102,10 @@
       "commit_edit_menu_back": "Back",
       "commit_add_emoji_prompt": "Enter emoji code (e.g., :sparkles:):",
       "commit_add_type_prompt": "Enter commit type (e.g., feat, fix):",
-      "commit_add_desc_en_prompt": "Enter English description:",
-      "commit_add_desc_pt_prompt": "Enter Portuguese description:",
+      "commit_add_desc_en_prompt": "Enter English description (optional):",
+      "commit_add_desc_pt_prompt": "Enter Portuguese description (optional):",
+      "commit_add_desc_default_en": "default: none",
+      "commit_add_desc_default_pt": "padrão: nenhuma",
       "commit_edit_select": "Select commit type to edit:",
       "commit_remove_select": "Select commit type to remove:",
       "commit_preview_title": "Changes Preview:",
@@ -166,8 +168,10 @@
       "commit_edit_menu_back": "Voltar",
       "commit_add_emoji_prompt": "Digite o código do emoji (ex: :sparkles:):",
       "commit_add_type_prompt": "Digite o tipo de commit (ex: feat, fix):",
-      "commit_add_desc_en_prompt": "Digite a descrição em inglês:",
-      "commit_add_desc_pt_prompt": "Digite a descrição em português:",
+      "commit_add_desc_en_prompt": "Digite a descrição em inglês (opcional):",
+      "commit_add_desc_pt_prompt": "Digite a descrição em português (opcional):",
+      "commit_add_desc_default_en": "default: none",
+      "commit_add_desc_default_pt": "padrão: nenhuma",
       "commit_edit_select": "Selecione o tipo de commit para editar:",
       "commit_remove_select": "Selecione o tipo de commit para remover:",
       "commit_preview_title": "Pré-visualização das Alterações:",
