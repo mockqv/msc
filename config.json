@@ -1,0 +1,34 @@
+{
+  "settings": {
+    "language": "en"
+  },
+  "commit_types": [
+    { "value": ":sparkles: feat", "name": "feat: A new feature" },
+    { "value": ":bug: fix", "name": "fix: A bug fix" },
+    { "value": ":paintbrush: style", "name": "style: Changes that do not affect the meaning of the code" },
+    { "value": ":recycle: refactor", "name": "refactor: A code change that neither fixes a bug nor adds a feature" },
+    { "value": ":memo: docs", "name": "docs: Documentation only changes" },
+    { "value": ":white_check_mark: test", "name": "test: Adding missing tests or correcting existing tests" },
+    { "value": ":wrench: chore", "name": "chore: Changes to the build process or auxiliary tools" }
+  ],
+  "texts": {
+    "en": {
+      "select_commit_type": "Select the commit type:",
+      "no_files_to_commit": "Error: No files staged for commit. Use 'msc add' to stage files.",
+      "commit_message_prompt": "Enter the commit message:",
+      "select_files_to_add": "Select the files to add (press <space> to select, <a> to toggle all, <i> to invert selection):",
+      "files_added": "Files added to stage.",
+      "commit_successful": "Commit successful!",
+      "no_untracked_files": "No untracked files to add."
+    },
+    "pt": {
+      "select_commit_type": "Selecione o tipo de commit:",
+      "no_files_to_commit": "Erro: Não há arquivos no stage para commitar. Use 'msc add' para adicionar.",
+      "commit_message_prompt": "Digite a mensagem do commit:",
+      "select_files_to_add": "Selecione os arquivos para adicionar (pressione <espaço> para selecionar, <a> para marcar todos, <i> para inverter a seleção):",
+      "files_added": "Arquivos adicionados ao stage.",
+      "commit_successful": "Commit realizado com sucesso!",
+      "no_untracked_files": "Nenhum arquivo não rastreado para adicionar."
+    }
+  }
+}
