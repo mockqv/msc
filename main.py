@@ -237,7 +237,7 @@ def get_commit_type_choices(config, texts, include_back=False):
     for item in commit_types:
         if 'names' in item:
             title = item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type'))
-            choices.append(questionary.Choice(title=f"{item['value']} {title}", value=item['value']))
+            choices.append(questionary.Choice(title=title, value=item['value']))
     if include_back:
         choices.append(questionary.Choice(title=texts.get('commit_edit_menu_back', "Back"), value="back"))
     return choices
