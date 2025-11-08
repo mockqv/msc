@@ -101,6 +101,9 @@ def handle_commit(config, texts):
         if result.returncode == 0:
             print(YELLOW + texts.get('no_files_to_commit', "Error: No files staged for commit.") + NC)
             return
+
+        print(f"\n{YELLOW}{texts.get('emoji_guide_hint', '# If you have doubts about emojis, look in EmojiFlags.MD')}{NC}")
+
         lang = config.get("settings", {}).get("language", "en")
         commit_types = config.get('commit_types', [])
         choices = [
@@ -176,8 +179,8 @@ def handle_push(config, texts):
         print(f"\n{YELLOW}Operation cancelled by user.{NC}")
         sys.exit(0)
 
-def handle_config(args, config, texts):
-    """Handles the 'config' command to change settings."""
+def handle_config_flags(args, config, texts):
+    """Handles the 'config' command when flags are provided (e.g., --lang)."""
     if not args or len(args) < 2 or args[0] != '--lang':
         print("Usage: msc config --lang <en|pt>")
         return
@@ -188,12 +191,252 @@ def handle_config(args, config, texts):
         return
     try:
         config['settings']['language'] = new_lang
-        with open(CONFIG_FILE, 'w') as f:
-            json.dump(config, f, indent=2)
+        save_config(config)
         print(f"{GREEN}Language successfully changed to '{new_lang}'.{NC}")
     except Exception as e:
         print(f"{RED}An error occurred while writing to the config file: {e}{NC}")
         sys.exit(1)
+
+def handle_interactive_language_change(config, texts):
+    """Handles interactive language change."""
+    supported_languages = list(config.get('texts', {}).keys())
+    new_lang = questionary.select(
+        texts.get('config_menu_lang_select', "Select a new language:"),
+        choices=supported_languages
+    ).ask()
+    if new_lang:
+        try:
+            config['settings']['language'] = new_lang
+            save_config(config)
+            # We need to get the success message from the *new* language's text map
+            new_texts = config.get('texts', {}).get(new_lang, {})
+            success_message = new_texts.get('config_menu_lang_success', "Language successfully changed to '{lang}'.")
+            print(f"{GREEN}{success_message.format(lang=new_lang)}{NC}")
+        except Exception as e:
+            print(f"{RED}An error occurred while writing to the config file: {e}{NC}")
+            sys.exit(1)
+
+def save_config(config_data):
+    """Saves the configuration to the JSON file."""
+    try:
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config_data, f, indent=2)
+    except Exception as e:
+        print(f"{RED}Error saving configuration: {e}{NC}")
+        sys.exit(1)
+
+def get_commit_type_choices(config, texts, include_back=False):
+    """Helper to get formatted choices for commit types."""
+    lang = config.get("settings", {}).get("language", "en")
+    commit_types = config.get('commit_types', [])
+    choices = []
+    for item in commit_types:
+        if 'names' in item:
+            title = item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type'))
+            choices.append(questionary.Choice(title=f"{item['value']} {title}", value=item['value']))
+    if include_back:
+        choices.append(questionary.Choice(title=texts.get('commit_edit_menu_back', "Back"), value="back"))
+    return choices
+
+def validate_emoji(emoji_code):
+    """Basic validation for emoji code format."""
+    return emoji_code.startswith(':') and emoji_code.endswith(':') and len(emoji_code) > 2
+
+def preview_and_confirm_changes(original_config, new_config, texts):
+    """Displays a preview of changes and asks for confirmation to save."""
+    print(f"\n{YELLOW}{texts.get('commit_preview_title', 'Changes Preview:')}{NC}")
+    
+    # Simplified preview for now, just showing the new state
+    # A full diff is complex for JSON in a CLI
+    print(f"{texts.get('commit_preview_new', 'New:')}")
+    
+    # Find the commit_types array in both configs
+    original_types = original_config.get('commit_types', [])
+    new_types = new_config.get('commit_types', [])
+
+    # Print a simplified view of the new commit types
+    lang = new_config.get("settings", {}).get("language", "en")
+    for item in new_types:
+        if 'names' in item:
+            title = item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type'))
+            print(f"  - {item['value']} {title}")
+    
+    confirm = questionary.confirm(texts.get('commit_save_confirm', "Save these changes?")).ask()
+    return confirm
+
+def add_commit_type(config, texts):
+    """Interactively adds a new commit type."""
+    print(f"\n{YELLOW}{texts.get('emoji_guide_hint', '# If you have doubts about emojis, look in EmojiFlags.MD')}{NC}")
+    
+    emoji = questionary.text(texts.get('commit_add_emoji_prompt', "Enter emoji code (e.g., :sparkles:):")).ask()
+    if not emoji: return
+    if not validate_emoji(emoji):
+        print(f"{RED}{texts.get('commit_invalid_emoji', 'Invalid emoji code.')}{NC}")
+        return
+
+    commit_type = questionary.text(texts.get('commit_add_type_prompt', "Enter commit type (e.g., feat, fix):")).ask()
+    if not commit_type: return
+    
+    # Check if type already exists
+    for item in config.get('commit_types', []):
+        if item.get('value', '').endswith(f" {commit_type}"): # Check if value ends with " type"
+            print(f"{RED}{texts.get('commit_type_exists', 'Commit type already exists.').format(type=commit_type)}{NC}")
+            return
+
+    desc_en = questionary.text(texts.get('commit_add_desc_en_prompt', "Enter English description:")).ask()
+    if not desc_en: return
+    desc_pt = questionary.text(texts.get('commit_add_desc_pt_prompt', "Enter Portuguese description:")).ask()
+    if not desc_pt: return
+
+    new_item = {
+        "value": f"{emoji} {commit_type}",
+        "names": {
+            "en": f"{commit_type}: {desc_en}",
+            "pt": f"{commit_type}: {desc_pt}"
+        }
+    }
+    
+    new_config = config.copy()
+    new_config['commit_types'] = new_config.get('commit_types', []) + [new_item]
+
+    if preview_and_confirm_changes(config, new_config, texts):
+        save_config(new_config)
+        print(GREEN + texts.get('commit_add_success', "Commit type added successfully!") + NC)
+    else:
+        print(YELLOW + texts.get('commit_changes_discarded', "Changes discarded.") + NC)
+
+def edit_commit_type(config, texts):
+    """Interactively edits an existing commit type."""
+    if not config.get('commit_types'):
+        print(YELLOW + texts.get('commit_no_types', "No commit types defined.") + NC)
+        return
+
+    choices = get_commit_type_choices(config, texts)
+    selected_value = questionary.select(
+        texts.get('commit_edit_select', "Select commit type to edit:"),
+        choices=choices
+    ).ask()
+
+    if not selected_value: return
+
+    original_item = next((item for item in config['commit_types'] if item['value'] == selected_value), None)
+    if not original_item:
+        print(f"{RED}{texts.get('commit_type_not_found', 'Commit type not found.')}{NC}")
+        return
+
+    print(f"\n{YELLOW}Editing: {original_item['value']}{NC}")
+    print(f"{YELLOW}{texts.get('emoji_guide_hint', '# If you have doubts about emojis, look in EmojiFlags.MD')}{NC}")
+
+    # Pre-fill with current values
+    current_emoji = original_item['value'].split(' ')[0] if ' ' in original_item['value'] else ''
+    current_type = original_item['value'].split(' ')[1] if ' ' in original_item['value'] else original_item['value']
+    current_desc_en = original_item['names'].get('en', '').split(': ', 1)[1] if ': ' in original_item['names'].get('en', '') else original_item['names'].get('en', '')
+    current_desc_pt = original_item['names'].get('pt', '').split(': ', 1)[1] if ': ' in original_item['names'].get('pt', '') else original_item['names'].get('pt', '')
+
+    new_emoji = questionary.text(texts.get('commit_add_emoji_prompt', "Enter emoji code (e.g., :sparkles:):"), default=current_emoji).ask()
+    if not new_emoji: return
+    if not validate_emoji(new_emoji):
+        print(f"{RED}{texts.get('commit_invalid_emoji', 'Invalid emoji code.')}{NC}")
+        return
+
+    new_type = questionary.text(texts.get('commit_add_type_prompt', "Enter commit type (e.g., feat, fix):"), default=current_type).ask()
+    if not new_type: return
+
+    new_desc_en = questionary.text(texts.get('commit_add_desc_en_prompt', "Enter English description:"), default=current_desc_en).ask()
+    if not new_desc_en: return
+    new_desc_pt = questionary.text(texts.get('commit_add_desc_pt_prompt', "Enter Portuguese description:"), default=current_desc_pt).ask()
+    if not new_desc_pt: return
+
+    updated_item = {
+        "value": f"{new_emoji} {new_type}",
+        "names": {
+            "en": f"{new_type}: {new_desc_en}",
+            "pt": f"{new_type}: {new_desc_pt}"
+        }
+    }
+
+    new_config = config.copy()
+    new_config['commit_types'] = [updated_item if item['value'] == selected_value else item for item in config['commit_types']]
+
+    if preview_and_confirm_changes(config, new_config, texts):
+        save_config(new_config)
+        print(GREEN + texts.get('commit_changes_saved', "Changes saved successfully!") + NC)
+    else:
+        print(YELLOW + texts.get('commit_changes_discarded', "Changes discarded.") + NC)
+
+def remove_commit_type(config, texts):
+    """Interactively removes an existing commit type."""
+    if not config.get('commit_types'):
+        print(YELLOW + texts.get('commit_no_types', "No commit types defined.") + NC)
+        return
+
+    choices = get_commit_type_choices(config, texts)
+    selected_value = questionary.select(
+        texts.get('commit_remove_select', "Select commit type to remove:"),
+        choices=choices
+    ).ask()
+
+    if not selected_value: return
+
+    new_config = config.copy()
+    new_config['commit_types'] = [item for item in config['commit_types'] if item['value'] != selected_value]
+
+    if preview_and_confirm_changes(config, new_config, texts):
+        save_config(new_config)
+        print(GREEN + texts.get('commit_remove_success', "Commit type removed successfully!") + NC)
+    else:
+        print(YELLOW + texts.get('commit_changes_discarded', "Changes discarded.") + NC)
+
+def show_commit_edit_menu(config, texts):
+    """Displays the menu for editing commit types."""
+    while True:
+        choice = questionary.select(
+            texts.get('commit_edit_menu_title', "Edit Commit Types Menu"),
+            choices=[
+                questionary.Choice(title=texts.get('commit_edit_menu_add', "Add New Commit Type"), value="add"),
+                questionary.Choice(title=texts.get('commit_edit_menu_edit', "Edit Existing Commit Type"), value="edit"),
+                questionary.Choice(title=texts.get('commit_edit_menu_remove', "Remove Commit Type"), value="remove"),
+                questionary.Choice(title=texts.get('commit_edit_menu_back', "Back"), value="back")
+            ]
+        ).ask()
+
+        if choice == "add":
+            add_commit_type(config, texts)
+            config = load_config() # Reload config after potential changes
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "edit":
+            edit_commit_type(config, texts)
+            config = load_config() # Reload config after potential changes
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "remove":
+            remove_commit_type(config, texts)
+            config = load_config() # Reload config after potential changes
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "back" or choice is None: # choice is None if user cancels
+            break
+
+def show_config_menu(config, texts):
+    """Displays the main interactive configuration menu."""
+    while True:
+        choice = questionary.select(
+            texts.get('config_menu_title', "Configuration Menu"),
+            choices=[
+                questionary.Choice(title=texts.get('config_menu_lang', "Change Language"), value="lang"),
+                questionary.Choice(title=texts.get('config_menu_commits', "Edit Commit Types"), value="commits"),
+                questionary.Choice(title=texts.get('config_menu_exit', "Exit"), value="exit")
+            ]
+        ).ask()
+
+        if choice == "lang":
+            handle_interactive_language_change(config, texts)
+            config = load_config() # Reload config and texts after language change
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "commits":
+            show_commit_edit_menu(config, texts)
+            config = load_config() # Reload config and texts after commit type changes
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "exit" or choice is None: # choice is None if user cancels
+            break
 
 def handle_version(config):
     """Prints the current version of the tool."""
@@ -269,7 +512,10 @@ def main():
     elif command == "push":
         handle_push(config, texts)
     elif command == "config":
-        handle_config(args[1:], config, texts)
+        if len(args) > 1:
+            handle_config_flags(args[1:], config, texts)
+        else:
+            show_config_menu(config, texts)
     elif command == "update":
         handle_update(config, texts)
     elif command == "--version" or command == "-v":
