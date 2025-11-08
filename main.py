@@ -27,26 +27,151 @@ def load_config():
         sys.exit(1)
 
 def show_help(texts):
-    """Prints the help message."""
-    print("MSC - My Semantic Commit")
-    print("A tool to streamline semantic commits.")
-    print("\nUsage:")
-    print("  msc add              - Interactively select untracked files to stage.")
-    print("  msc commit           - Interactively create a semantic commit.")
-    print("  msc config --lang <en|pt> - Change the display language.")
-    print("  msc --help           - Show this help message.")
+    """Prints the help message using text from the config file."""
+    # ANSI color codes
+    cyan = '\033[0;36m'
+    nc = '\033[0m' # No Color
+
+    art = r"""
+███╗   ███╗   ██████╗    ██████╗
+████╗ ████║  ██╔════╝   ██╔════╝
+██╔████╔██║  ╚█████╗    ██║
+██║╚██╔╝██║   ╚═══██╗   ██║
+██║ ╚═╝ ██║  ██████╔╝   ██╚════╝
+╚═╝     ╚═╝  ╚═════╝    ╚██████╝
+"""
+    print(f"{cyan}{art}{nc}")
+    print(texts.get('app_description', "A tool to streamline semantic commits."))
+    print(f"\n{texts.get('usage_title', 'Usage:')}")
+    print(f"  msc add              - {texts.get('usage_add', 'Interactively select untracked files to stage.')}")
+    print(f"  msc commit           - {texts.get('usage_commit', 'Interactively create a semantic commit.')}")
+    print(f"  msc config --lang <en|pt> - {texts.get('usage_config', 'Change the display language.')}")
+    print(f"  msc --help           - {texts.get('usage_help', 'Show this help message.')}")
 
 def handle_add(config, texts):
-    """Placeholder for the 'add' command functionality."""
-    print("'add' command is not yet implemented.")
+    """Handles the 'add' command to interactively stage untracked and modified files."""
+    try:
+        # Get untracked and modified files using git status --porcelain
+        result = subprocess.run(
+            ['git', 'status', '--porcelain', '--untracked-files=all'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        lines = result.stdout.strip().split('\n')
+        # A file can be untracked ('?? ') or modified (' M ').
+        # The slice [3:] correctly grabs the filename in both cases.
+        changed_files = [
+            line[3:] for line in lines if line.startswith(('?? ', ' M '))
+        ]
+
+        if not changed_files:
+            print(texts.get('no_changed_files', "No new or modified files to add."))
+            return
+
+        # Ask user to select files to add
+        selected_files = questionary.checkbox(
+            texts.get('select_files_to_add', "Select files to stage for commit:"),
+            choices=changed_files,
+            instruction=texts.get('select_files_instruction', " ")
+        ).ask()
+
+        if selected_files:
+            for file_path in selected_files:
+                subprocess.run(['git', 'add', file_path], check=True)
+            print(texts.get('files_added', "Selected files have been staged."))
+
+    except FileNotFoundError:
+        print("Error: 'git' command not found. Is Git installed and in your PATH?")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running git: {e.stderr}")
+        sys.exit(1)
+    except (KeyboardInterrupt, TypeError):
+        print("\nOperation cancelled by user.")
+        sys.exit(0)
 
 def handle_commit(config, texts):
-    """Placeholder for the 'commit' command functionality."""
-    print("'commit' command is not yet implemented.")
+    """Handles the 'commit' command to create a semantic commit message."""
+    try:
+        # Check if there are any staged files
+        result = subprocess.run(
+            ['git', 'diff', '--cached', '--quiet'],
+            capture_output=True,
+            text=True
+        )
+        # If exit code is 0, there are no staged changes
+        if result.returncode == 0:
+            print(texts.get('no_files_to_commit', "Error: No files staged for commit."))
+            return
+
+        # Prepare choices for questionary
+        lang = config.get("settings", {}).get("language", "en")
+        commit_types = config.get('commit_types', [])
+        choices = [
+            questionary.Choice(
+                title=item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type')),
+                value=item['value']
+            )
+            for item in commit_types if 'names' in item
+        ]
+
+        # Ask for the commit type
+        selected_type = questionary.select(
+            texts.get('select_commit_type', "Select the commit type:"),
+            choices=choices
+        ).ask()
+
+        if not selected_type:
+            raise KeyboardInterrupt()
+
+        # Ask for the commit message
+        commit_message = questionary.text(
+            texts.get('commit_message_prompt', "Enter the commit message:")
+        ).ask()
+
+        if not commit_message:
+            raise KeyboardInterrupt()
+
+        # Construct the final commit message and execute
+        final_message = f"{selected_type}: {commit_message}"
+        subprocess.run(['git', 'commit', '-m', final_message], check=True)
+        print(f"\n{texts.get('commit_successful', 'Commit successful!')}")
+
+    except FileNotFoundError:
+        print("Error: 'git' command not found. Is Git installed and in your PATH?")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while running git: {e.stderr}")
+        sys.exit(1)
+    except (KeyboardInterrupt, TypeError):
+        print("\nOperation cancelled by user.")
+        sys.exit(0)
 
 def handle_config(args, config, texts):
-    """Placeholder for the 'config' command functionality."""
-    print("'config' command is not yet implemented.")
+    """Handles the 'config' command to change settings."""
+    if not args or len(args) < 2 or args[0] != '--lang':
+        print("Usage: msc config --lang <en|pt>")
+        return
+
+    new_lang = args[1]
+
+    # Validate if the new language is supported
+    if new_lang not in config.get('texts', {}):
+        print(f"Error: Language '{new_lang}' is not supported.")
+        print("Supported languages are: " + ", ".join(config.get('texts', {}).keys()))
+        return
+
+    # Update the configuration file
+    try:
+        config['settings']['language'] = new_lang
+        with open(CONFIG_FILE, 'w') as f:
+            json.dump(config, f, indent=2)
+        print(f"Language successfully changed to '{new_lang}'.")
+    except Exception as e:
+        print(f"An error occurred while writing to the config file: {e}")
+        sys.exit(1)
 
 
 def main():

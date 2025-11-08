@@ -3,32 +3,88 @@
     "language": "en"
   },
   "commit_types": [
-    { "value": ":sparkles: feat", "name": "feat: A new feature" },
-    { "value": ":bug: fix", "name": "fix: A bug fix" },
-    { "value": ":paintbrush: style", "name": "style: Changes that do not affect the meaning of the code" },
-    { "value": ":recycle: refactor", "name": "refactor: A code change that neither fixes a bug nor adds a feature" },
-    { "value": ":memo: docs", "name": "docs: Documentation only changes" },
-    { "value": ":white_check_mark: test", "name": "test: Adding missing tests or correcting existing tests" },
-    { "value": ":wrench: chore", "name": "chore: Changes to the build process or auxiliary tools" }
+    {
+      "value": ":sparkles: feat",
+      "names": {
+        "en": "feat: A new feature",
+        "pt": "feat: Uma nova funcionalidade"
+      }
+    },
+    {
+      "value": ":boom: fix",
+      "names": {
+        "en": "fix: A bug fix",
+        "pt": "fix: Uma correção de bug"
+      }
+    },
+    {
+      "value": ":paintbrush: style",
+      "names": {
+        "en": "style: Changes that do not affect the meaning of the code",
+        "pt": "style: Mudanças que não afetam o significado do código"
+      }
+    },
+    {
+      "value": ":recycle: refactor",
+      "names": {
+        "en": "refactor: A code change that neither fixes a bug nor adds a feature",
+        "pt": "refactor: Uma mudança de código que não corrige um bug nem adiciona um recurso"
+      }
+    },
+    {
+      "value": ":memo: docs",
+      "names": {
+        "en": "docs: Documentation only changes",
+        "pt": "docs: Mudanças apenas na documentação"
+      }
+    },
+    {
+      "value": ":white_check_mark: test",
+      "names": {
+        "en": "test: Adding missing tests or correcting existing tests",
+        "pt": "test: Adicionando testes ausentes ou corrigindo testes existentes"
+      }
+    },
+    {
+      "value": ":wrench: chore",
+      "names": {
+        "en": "chore: Changes to the build process or auxiliary tools",
+        "pt": "chore: Mudanças no processo de build ou ferramentas auxiliares"
+      }
+    }
   ],
   "texts": {
     "en": {
       "select_commit_type": "Select the commit type:",
       "no_files_to_commit": "Error: No files staged for commit. Use 'msc add' to stage files.",
       "commit_message_prompt": "Enter the commit message:",
-      "select_files_to_add": "Select the files to add (press <space> to select, <a> to toggle all, <i> to invert selection):",
+      "select_files_to_add": "Select files to stage for commit:",
+      "select_files_instruction": "(<space> to select, <a> to toggle all, <i> to invert, <enter> to confirm)",
       "files_added": "Files added to stage.",
       "commit_successful": "Commit successful!",
-      "no_untracked_files": "No untracked files to add."
+      "no_changed_files": "No new or modified files to add.",
+      "app_description": "A tool to streamline semantic commits.",
+      "usage_title": "Usage:",
+      "usage_add": "Interactively select untracked files to stage.",
+      "usage_commit": "Interactively create a semantic commit.",
+      "usage_config": "Change the display language.",
+      "usage_help": "Show this help message."
     },
     "pt": {
       "select_commit_type": "Selecione o tipo de commit:",
       "no_files_to_commit": "Erro: Não há arquivos no stage para commitar. Use 'msc add' para adicionar.",
       "commit_message_prompt": "Digite a mensagem do commit:",
-      "select_files_to_add": "Selecione os arquivos para adicionar (pressione <espaço> para selecionar, <a> para marcar todos, <i> para inverter a seleção):",
+      "select_files_to_add": "Selecione os arquivos para adicionar ao commit:",
+      "select_files_instruction": "(<espaço> para selecionar, <a> para marcar todos, <i> para inverter, <enter> para confirmar)",
       "files_added": "Arquivos adicionados ao stage.",
       "commit_successful": "Commit realizado com sucesso!",
-      "no_untracked_files": "Nenhum arquivo não rastreado para adicionar."
+      "no_changed_files": "Nenhum arquivo novo ou modificado para adicionar.",
+      "app_description": "Uma ferramenta para otimizar commits semânticos.",
+      "usage_title": "Uso:",
+      "usage_add": "Seleciona interativamente arquivos não rastreados para o stage.",
+      "usage_commit": "Cria interativamente um commit semântico.",
+      "usage_config": "Altera o idioma de exibição.",
+      "usage_help": "Mostra esta mensagem de ajuda."
     }
   }
 }
