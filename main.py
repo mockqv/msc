@@ -64,7 +64,11 @@ def handle_add(config, texts, add_args):
                 capture_output=True, text=True, check=True
             )
             lines = result.stdout.strip().split('\n')
-            changed_files = [line[3:] for line in lines if line.startswith(('?? ', ' M '))]
+            
+            # Include files that are untracked, modified, deleted, or renamed.
+            # The space in the status codes (' M ', ' D ') is important.
+            changed_files = [line[3:] for line in lines if line.startswith(('?? ', ' M ', ' D ', 'A  ', 'R  '))]
+            
             if not changed_files:
                 print(texts.get('no_changed_files', "No new or modified files to add."))
                 return
