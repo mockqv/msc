@@ -1,5 +1,5 @@
 {
-  "version": "1.2.3",
+  "version": "1.2.4",
   "repository_url": "https://github.com/mockqv/msc",
   "settings": {
     "language": "en"
@@ -99,7 +99,10 @@
       "commit_edit_menu_add": "Add New Commit Type",
       "commit_edit_menu_edit": "Edit Existing Commit Type",
       "commit_edit_menu_remove": "Remove Commit Type",
+      "commit_edit_menu_reset": "Reset to Defaults",
       "commit_edit_menu_back": "Back",
+      "commit_reset_confirm": "Are you sure you want to reset all commit types to their default values? This cannot be undone.",
+      "commit_reset_success": "Commit types have been reset to default.",
       "commit_add_emoji_prompt": "Enter emoji code (e.g., :sparkles:):",
       "commit_add_type_prompt": "Enter commit type (e.g., feat, fix):",
       "commit_add_desc_en_prompt": "Enter English description (optional):",
@@ -180,7 +183,10 @@
       "commit_edit_menu_add": "Adicionar Novo Tipo de Commit",
       "commit_edit_menu_edit": "Editar Tipo de Commit Existente",
       "commit_edit_menu_remove": "Remover Tipo de Commit",
+      "commit_edit_menu_reset": "Redefinir para Padrões",
       "commit_edit_menu_back": "Voltar",
+      "commit_reset_confirm": "Tem certeza de que deseja redefinir todos os tipos de commit para os valores padrão? Esta ação não pode ser desfeita.",
+      "commit_reset_success": "Os tipos de commit foram redefinidos para o padrão.",
       "commit_add_emoji_prompt": "Digite o código do emoji (ex: :sparkles:):",
       "commit_add_type_prompt": "Digite o tipo de commit (ex: feat, fix):",
       "commit_add_desc_en_prompt": "Digite a descrição em inglês (opcional):",

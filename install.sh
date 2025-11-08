@@ -93,11 +93,11 @@ import questionary
 from collections.abc import MutableMapping
 
 def deep_update(d, u):
-    \"\"
-    Recursively update a dictionary 'd' with values from 'u'.
-    If a key in 'u' is a dictionary, it recursively updates the corresponding key in 'd'.
-    Otherwise, it just sets the value.
-    \"\"
+   
+    # Recursively update a dictionary 'd' with values from 'u'.
+    # If a key in 'u' is a dictionary, it recursively updates the corresponding key in 'd'.
+    # Otherwise, it just sets the value.
+    
     for k, v in u.items():
         if isinstance(v, MutableMapping):
             d[k] = deep_update(d.get(k, {}), v)

@@ -237,7 +237,9 @@ def get_commit_type_choices(config, texts, include_back=False):
     for item in commit_types:
         if 'names' in item:
             title = item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type'))
-            choices.append(questionary.Choice(title=title, value=item['value']))
+            emoji = item['value'].split(' ')[0]
+            display_title = f"{emoji} {title}"
+            choices.append(questionary.Choice(title=display_title, value=item['value']))
     if include_back:
         choices.append(questionary.Choice(title=texts.get('commit_edit_menu_back', "Back"), value="back"))
     return choices
@@ -404,6 +406,8 @@ def show_commit_edit_menu(config, texts):
                 questionary.Choice(title=texts.get('commit_edit_menu_add', "Add New Commit Type"), value="add"),
                 questionary.Choice(title=texts.get('commit_edit_menu_edit', "Edit Existing Commit Type"), value="edit"),
                 questionary.Choice(title=texts.get('commit_edit_menu_remove', "Remove Commit Type"), value="remove"),
+                questionary.Separator(),
+                questionary.Choice(title=texts.get('commit_edit_menu_reset', "Reset to Defaults"), value="reset"),
                 questionary.Choice(title=texts.get('commit_edit_menu_back', "Back"), value="back")
             ]
         ).ask()
