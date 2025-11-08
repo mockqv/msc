@@ -397,6 +397,45 @@ def remove_commit_type(config, texts):
     else:
         print(YELLOW + texts.get('commit_changes_discarded', "Changes discarded.") + NC)
 
+def reset_commit_types(texts):
+    """Resets the commit types to the default ones from the repository."""
+    print(f"{YELLOW}DEBUG: Entered reset_commit_types function.{NC}")
+    
+    confirmation = questionary.confirm(
+        texts.get('commit_reset_confirm', "Are you sure you want to reset all commit types to their default values? This cannot be undone."),
+        default=False
+    ).ask()
+
+    print(f"{YELLOW}DEBUG: Confirmation response: {confirmation}{NC}")
+
+    if confirmation:
+        try:
+            user_config = load_config()
+            repo_path = user_config.get('repository_path')
+            
+            print(f"{YELLOW}DEBUG: Repo path from config: {repo_path}{NC}")
+
+            if not repo_path or not os.path.isdir(repo_path):
+                print(f"{RED}Error: Repository path not found or invalid. Cannot load default config.{NC}")
+                return
+            
+            default_config_path = os.path.join(repo_path, 'config.json')
+            print(f"{YELLOW}DEBUG: Loading default config from: {default_config_path}{NC}")
+
+            with open(default_config_path, 'r') as f:
+                default_config = json.load(f)
+            
+            default_commit_types = default_config.get('commit_types', [])
+            
+            user_config['commit_types'] = default_commit_types
+            save_config(user_config)
+            
+            print(GREEN + texts.get('commit_reset_success', "Commit types have been reset to default.") + NC)
+        except FileNotFoundError:
+            print(f"{RED}Error: Default config file not found at {default_config_path}{NC}")
+        except Exception as e:
+            print(f"{RED}An error occurred while resetting commit types: {e}{NC}")
+
 def show_commit_edit_menu(config, texts):
     """Displays the menu for editing commit types."""
     while True:
@@ -414,17 +453,21 @@ def show_commit_edit_menu(config, texts):
 
         if choice == "add":
             add_commit_type(config, texts)
-            config = load_config() # Reload config after potential changes
+            config = load_config()
             texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
         elif choice == "edit":
             edit_commit_type(config, texts)
-            config = load_config() # Reload config after potential changes
+            config = load_config()
             texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
         elif choice == "remove":
             remove_commit_type(config, texts)
-            config = load_config() # Reload config after potential changes
+            config = load_config()
             texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
-        elif choice == "back" or choice is None: # choice is None if user cancels
+        elif choice == "reset":
+            reset_commit_types(texts)
+            config = load_config()
+            texts = config.get("texts", {}).get(config.get("settings", {}).get("language", "en"), {})
+        elif choice == "back" or choice is None:
             break
 
 def show_config_menu(config, texts):
