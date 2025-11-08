@@ -1,4 +1,6 @@
 {
+  "version": "1.0.0",
+  "repository_url": "https://github.com/mockqv/msc",
   "settings": {
     "language": "en"
   },
@@ -69,7 +71,17 @@
       "usage_add": "Add files to stage interactively or directly.",
       "usage_commit": "Interactively create a semantic commit.",
       "usage_config": "Change the display language.",
-      "usage_help": "Show this help message."
+      "usage_help": "Show this help message.",
+      "usage_version": "Show the current version of the tool.",
+      "usage_update": "Check for new updates.",
+      "checking_for_updates": "Checking for updates...",
+      "up_to_date": "You are already using the latest version.",
+      "new_version_available": "New version {remote_version} is available! To update, run 'git pull' in the project directory and then './install.sh'",
+      "update_check_failed": "Failed to check for updates. Please check your internet connection.",
+      "attempting_auto_update": "Attempting automatic update...",
+      "local_changes_detected": "Local changes detected. Please commit or stash them before updating.",
+      "update_complete": "Update complete!",
+      "update_failed": "Automatic update failed. Please update manually."
     },
     "pt": {
       "select_commit_type": "Selecione o tipo de commit:",
@@ -86,7 +98,17 @@
       "usage_add": "Adiciona arquivos ao stage de forma interativa ou direta.",
       "usage_commit": "Cria interativamente um commit semântico.",
       "usage_config": "Altera o idioma de exibição.",
-      "usage_help": "Mostra esta mensagem de ajuda."
+      "usage_help": "Mostra esta mensagem de ajuda.",
+      "usage_version": "Mostra a versão atual da ferramenta.",
+      "usage_update": "Verifica se há novas atualizações.",
+      "checking_for_updates": "Verificando atualizações...",
+      "up_to_date": "Você já está com a versão mais recente.",
+      "new_version_available": "Nova versão {remote_version} disponível! Para atualizar, execute 'git pull' no diretório do projeto e depois './install.sh'",
+      "update_check_failed": "Falha ao verificar atualizações. Verifique sua conexão com a internet.",
+      "attempting_auto_update": "Tentando atualização automática...",
+      "local_changes_detected": "Alterações locais detectadas. Por favor, faça commit ou 'stash' delas antes de atualizar.",
+      "update_complete": "Atualização completa!",
+      "update_failed": "A atualização automática falhou. Por favor, atualize manually."
     }
   }
 }
