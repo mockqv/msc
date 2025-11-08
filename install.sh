@@ -80,6 +80,7 @@ echo "2. Installing dependencies..."
 pip3 install -r requirements.txt --quiet
 
 echo "3. Configuring language and settings..."
+export MSC_REPO_PATH=$(pwd)
 python3 -c "
 import questionary
 import json
@@ -107,15 +108,20 @@ try:
     if choice is not None:
         selected_lang = lang_map.get(choice, 'en')
 
-    print(f\"Language set to '{selected_lang}'.\n\")
+    print(f\"Language set to '{selected_lang}'.\")
 
-    # --- Update the config file with the selected language ---
+    # --- Update the config file with language and repo path ---
+    repo_path = os.environ.get('MSC_REPO_PATH', '')
     with open(CONFIG_FILE, 'r+') as f:
         config_data = json.load(f)
         config_data['settings']['language'] = selected_lang
+        if repo_path:
+            config_data['repository_path'] = repo_path
         f.seek(0)
         json.dump(config_data, f, indent=2)
         f.truncate()
+    
+    print('Configuration file updated with repository path.')
 
 except (KeyboardInterrupt, TypeError):
     print('\nInstallation cancelled by user.')
