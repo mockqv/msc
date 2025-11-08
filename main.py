@@ -10,6 +10,12 @@ import questionary
 CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "msc")
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
+# ANSI color codes
+YELLOW = '\033[0;33m'
+GREEN = '\033[0;32m'
+RED = '\033[0;31m'
+NC = '\033[0m' # No Color
+
 # --- Functions ---
 
 def load_config():
@@ -18,651 +24,260 @@ def load_config():
         with open(CONFIG_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        print(f"Error: Configuration file not found at {CONFIG_FILE}")
+        print(f"{RED}Error: Configuration file not found at {CONFIG_FILE}{NC}")
         print("Please run the 'install.sh' script first.")
         sys.exit(1)
     except json.JSONDecodeError:
-        print(f"Error: Could not decode JSON from {CONFIG_FILE}.")
+        print(f"{RED}Error: Could not decode JSON from {CONFIG_FILE}.{NC}")
         print("The file might be corrupted.")
         sys.exit(1)
 
 def show_help(texts):
-
     """Prints the help message using text from the config file."""
-
-    # ANSI color codes
-
     cyan = '\033[0;36m'
-
-    nc = '\033[0m' # No Color
-
-
-
     art = r"""
-
 ███╗   ███╗   ██████╗    ██████╗
 ████╗ ████║  ██╔════╝   ██╔════╝
 ██╔████╔██║  ╚█████╗    ██║
 ██║╚██╔╝██║   ╚═══██╗   ██║
 ██║ ╚═╝ ██║  ██████╔╝   ██╚════╝
 ╚═╝     ╚═╝  ╚═════╝    ╚██████╝
-
 """
-
-    print(f"{cyan}{art}{nc}")
-
+    print(f"{cyan}{art}{NC}")
     print(texts.get('app_description', "A tool to streamline semantic commits."))
-
     print(f"\n{texts.get('usage_title', 'Usage:')}")
-
     print(f"  msc add [files..|all|.] - {texts.get('usage_add', 'Add files to stage interactively or directly.')}")
-
     print(f"  msc commit           - {texts.get('usage_commit', 'Interactively create a semantic commit.')}")
-
+    print(f"  msc push             - {texts.get('usage_push', 'Push commits to the remote repository with a safety check.')}")
     print(f"  msc config --lang <en|pt> - {texts.get('usage_config', 'Change the display language.')}")
-
     print(f"  msc update           - {texts.get('usage_update', 'Check for new updates.')}")
-
     print(f"  msc --version, -v    - {texts.get('usage_version', 'Show the current version of the tool.')}")
-
     print(f"  msc --help           - {texts.get('usage_help', 'Show this help message.')}")
 
-
-
 def handle_add(config, texts, add_args):
-
     """Handles the 'add' command to interactively or directly stage files."""
-
     try:
-
         if not add_args:
-
             # Interactive mode
-
             result = subprocess.run(
-
                 ['git', 'status', '--porcelain', '--untracked-files=all'],
-
                 capture_output=True, text=True, check=True
-
             )
-
             lines = result.stdout.strip().split('\n')
-
             changed_files = [line[3:] for line in lines if line.startswith(('?? ', ' M '))]
-
-
-
             if not changed_files:
-
                 print(texts.get('no_changed_files', "No new or modified files to add."))
-
                 return
-
-
-
             selected_files = questionary.checkbox(
-
                 texts.get('select_files_to_add', "Select files to stage for commit:"),
-
                 choices=changed_files,
-
                 instruction=texts.get('select_files_instruction', " ")
-
             ).ask()
-
-
-
             if selected_files:
-
                 for file_path in selected_files:
-
                     subprocess.run(['git', 'add', file_path], check=True)
-
-                print(texts.get('files_added', "Selected files have been staged."))
-
+                print(GREEN + texts.get('files_added', "Selected files have been staged.") + NC)
         else:
-
             # Direct mode
-
             processed_args = ['.' if arg.lower() == 'all' else arg for arg in add_args]
-
             command = ['git', 'add'] + processed_args
-
             subprocess.run(command, check=True, capture_output=True)
-
             files_str = ", ".join(processed_args)
-
-            print(texts.get('files_added_direct', "Added to stage: {files}").format(files=files_str))
-
-
-
+            print(GREEN + texts.get('files_added_direct', "Added to stage: {files}").format(files=files_str) + NC)
     except FileNotFoundError:
-
-        print("Error: 'git' command not found. Is Git installed and in your PATH?")
-
+        print(f"{RED}Error: 'git' command not found. Is Git installed and in your PATH?{NC}")
         sys.exit(1)
-
     except subprocess.CalledProcessError as e:
-
-        print(f"An error occurred while running git: {e.stderr}")
-
+        print(f"{RED}An error occurred while running git: {e.stderr}{NC}")
         sys.exit(1)
-
     except (KeyboardInterrupt, TypeError):
-
-        print("\nOperation cancelled by user.")
-
+        print(f"\n{YELLOW}Operation cancelled by user.{NC}")
         sys.exit(0)
-
-
 
 def handle_commit(config, texts):
-
     """Handles the 'commit' command to create a semantic commit message."""
-
     try:
-
-        # Check if there are any staged files
-
-        result = subprocess.run(
-
-            ['git', 'diff', '--cached', '--quiet'],
-
-            capture_output=True,
-
-            text=True
-
-        )
-
-        # If exit code is 0, there are no staged changes
-
+        result = subprocess.run(['git', 'diff', '--cached', '--quiet'], capture_output=True, text=True)
         if result.returncode == 0:
-
-            print(texts.get('no_files_to_commit', "Error: No files staged for commit."))
-
+            print(YELLOW + texts.get('no_files_to_commit', "Error: No files staged for commit.") + NC)
             return
-
-
-
-        # Prepare choices for questionary
-
         lang = config.get("settings", {}).get("language", "en")
-
         commit_types = config.get('commit_types', [])
-
         choices = [
-
             questionary.Choice(
-
                 title=item['names'].get(lang, item['names'].get('en', 'Unnamed Commit Type')),
-
                 value=item['value']
-
             )
-
             for item in commit_types if 'names' in item
-
         ]
-
-
-
-        # Ask for the commit type
-
         selected_type = questionary.select(
-
             texts.get('select_commit_type', "Select the commit type:"),
-
             choices=choices
-
         ).ask()
-
-
-
-        if not selected_type:
-
-            raise KeyboardInterrupt()
-
-
-
-        # Ask for the commit message
-
-        commit_message = questionary.text(
-
-            texts.get('commit_message_prompt', "Enter the commit message:")
-
-        ).ask()
-
-
-
-        if not commit_message:
-
-            raise KeyboardInterrupt()
-
-
-
-        # Construct the final commit message and execute
-
+        if not selected_type: raise KeyboardInterrupt()
+        commit_message = questionary.text(texts.get('commit_message_prompt', "Enter the commit message:")).ask()
+        if not commit_message: raise KeyboardInterrupt()
         final_message = f"{selected_type}: {commit_message}"
-
         subprocess.run(['git', 'commit', '-m', final_message], check=True)
+        print(f"\n{GREEN}{texts.get('commit_successful', 'Commit successful!')}{NC}")
+    except FileNotFoundError:
+        print(f"{RED}Error: 'git' command not found. Is Git installed and in your PATH?{NC}")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"{RED}An error occurred while running git: {e.stderr}{NC}")
+        sys.exit(1)
+    except (KeyboardInterrupt, TypeError):
+        print(f"\n{YELLOW}Operation cancelled by user.{NC}")
+        sys.exit(0)
 
-        print(f"\n{texts.get('commit_successful', 'Commit successful!')}")
+def handle_push(config, texts):
+    """Handles the 'push' command with a safety check for main/master branches."""
+    try:
+        result = subprocess.run(['git', 'branch', '--show-current'], capture_output=True, text=True, check=True)
+        branch_name = result.stdout.strip()
 
+        proceed = False
+        if branch_name in ['main', 'master']:
+            warning_message = texts.get('push_warning', "⚠️ You are about to push to the '{branch_name}' branch. Are you sure?").format(branch_name=branch_name)
+            
+            confirmation = questionary.select(
+                f"{YELLOW}{warning_message}{NC}",
+                choices=[
+                    questionary.Choice(title=texts.get('push_confirm_yes', "✅ Yes"), value=True),
+                    questionary.Choice(title=texts.get('push_confirm_no', "❌ No"), value=False)
+                ],
+                use_indicator=True
+            ).ask()
 
+            if confirmation:
+                proceed = True
+            else:
+                print(YELLOW + texts.get('push_cancelled', "Push operation cancelled.") + NC)
+        else:
+            proceed = True
+
+        if proceed:
+            print(f"Pushing to origin/{branch_name}...")
+            push_result = subprocess.run(['git', 'push', '-u', 'origin', branch_name], capture_output=True, text=True)
+            if push_result.returncode == 0:
+                print(GREEN + texts.get('push_successful', "Push successful!") + NC)
+                print(push_result.stdout)
+            else:
+                print(RED + texts.get('push_failed', "Push operation failed.") + NC)
+                print(push_result.stderr)
 
     except FileNotFoundError:
-
-        print("Error: 'git' command not found. Is Git installed and in your PATH?")
-
+        print(f"{RED}Error: 'git' command not found. Is Git installed and in your PATH?{NC}")
         sys.exit(1)
-
     except subprocess.CalledProcessError as e:
-
-        print(f"An error occurred while running git: {e.stderr}")
-
+        print(f"{RED}An error occurred while running git: {e.stderr}{NC}")
         sys.exit(1)
-
     except (KeyboardInterrupt, TypeError):
-
-        print("\nOperation cancelled by user.")
-
+        print(f"\n{YELLOW}Operation cancelled by user.{NC}")
         sys.exit(0)
-
-
 
 def handle_config(args, config, texts):
-
     """Handles the 'config' command to change settings."""
-
     if not args or len(args) < 2 or args[0] != '--lang':
-
         print("Usage: msc config --lang <en|pt>")
-
         return
-
-
-
     new_lang = args[1]
-
-
-
-    # Validate if the new language is supported
-
     if new_lang not in config.get('texts', {}):
-
-        print(f"Error: Language '{new_lang}' is not supported.")
-
+        print(f"{RED}Error: Language '{new_lang}' is not supported.{NC}")
         print("Supported languages are: " + ", ".join(config.get('texts', {}).keys()))
-
         return
-
-
-
-    # Update the configuration file
-
     try:
-
         config['settings']['language'] = new_lang
-
         with open(CONFIG_FILE, 'w') as f:
-
             json.dump(config, f, indent=2)
-
-        print(f"Language successfully changed to '{new_lang}'.")
-
+        print(f"{GREEN}Language successfully changed to '{new_lang}'.{NC}")
     except Exception as e:
-
-        print(f"An error occurred while writing to the config file: {e}")
-
+        print(f"{RED}An error occurred while writing to the config file: {e}{NC}")
         sys.exit(1)
-
-
 
 def handle_version(config):
-
     """Prints the current version of the tool."""
-
     version = config.get('version', 'N/A')
-
     print(f"msc version {version}")
 
-
-
 def handle_update(config, texts):
-
-
-
     """Checks for a new version and attempts to automatically update."""
-
-
-
     print(texts.get('checking_for_updates', "Checking for updates..."))
-
-
-
-    
-
-
-
     import urllib.request
-
-
-
-    
-
-
-
     repo_url = config.get('repository_url')
-
-
-
     if not repo_url:
-
-
-
-        print("Error: Repository URL not configured.")
-
-
-
+        print(f"{RED}Error: Repository URL not configured.{NC}")
         return
-
-
-
-
-
-
-
     raw_url = repo_url.replace('github.com', 'raw.githubusercontent.com') + '/main/config.json'
-
-
-
-    
-
-
-
     try:
-
-
-
         with urllib.request.urlopen(raw_url) as response:
-
-
-
             remote_data = response.read()
-
-
-
             remote_config = json.loads(remote_data)
-
-
-
-            
-
-
-
         remote_version = remote_config.get('version')
-
-
-
         local_version = config.get('version')
-
-
-
-
-
-
-
         if not remote_version or not local_version:
-
-
-
             print("Could not determine version from local or remote config.")
-
-
-
             return
-
-
-
-
-
-
-
         if remote_version > local_version:
-
-
-
             repo_path = config.get('repository_path')
-
-
-
-            # Fallback to manual update message if path isn't configured
-
-
-
             if not repo_path or not os.path.isdir(repo_path):
-
-
-
                 print(texts.get('new_version_available', "New version available!").format(
-
-
-
                     remote_version=remote_version, 
-
-
-
                     repo_url=repo_url
-
-
-
                 ))
-
-
-
                 return
-
-
-
-
-
-
-
-            # Attempt automatic update
-
-
-
             print(texts.get('attempting_auto_update', "Attempting automatic update..."))
-
-
-
             try:
-
-
-
-                # Check for local changes before pulling
-
-
-
                 status_result = subprocess.run(
-
-
-
                     ['git', '-C', repo_path, 'status', '--porcelain'],
-
-
-
                     capture_output=True, text=True, check=True
-
-
-
                 )
-
-
-
                 if status_result.stdout.strip():
-
-
-
-                    print(texts.get('local_changes_detected', "Local changes detected. Please commit or stash them before updating."))
-
-
-
+                    print(YELLOW + texts.get('local_changes_detected', "Local changes detected. Please commit or stash them before updating.") + NC)
                     sys.exit(1)
-
-
-
-
-
-
-
-                # Pull latest changes
-
-
-
                 print(f"Running 'git pull' in '{repo_path}'...")
-
-
-
                 subprocess.run(['git', '-C', repo_path, 'pull'], check=True, capture_output=True)
-
-
-
-
-
-
-
-                # Re-run installer
-
-
-
                 print("Re-running installer...")
-
-
-
                 installer_path = os.path.join(repo_path, 'install.sh')
-
-
-
-                # We need to run the installer from within the repo directory
-
-
-
                 subprocess.run(['bash', installer_path], check=True, cwd=repo_path, capture_output=True)
-
-
-
-
-
-
-
-                print(texts.get('update_complete', "Update complete!"))
-
-
-
+                print(GREEN + texts.get('update_complete', "Update complete!") + NC)
                 print(f"msc has been updated to version {remote_version}.")
-
-
-
-
-
-
-
             except Exception as e:
-
-
-
-                print(texts.get('update_failed', "Automatic update failed. Please update manually."))
-
-
-
+                print(RED + texts.get('update_failed', "Automatic update failed. Please update manually.") + NC)
         else:
-
-
-
-            print(texts.get('up_to_date', "You are already using the latest version."))
-
-
-
-
-
-
-
+            print(GREEN + texts.get('up_to_date', "You are already using the latest version.") + NC)
     except Exception as e:
-
-
-
-        print(texts.get('update_check_failed', "Failed to check for updates."))
-
-
+        print(RED + texts.get('update_check_failed', "Failed to check for updates.") + NC)
 
 def main():
-
     """Main function to parse arguments and execute commands."""
-
     config = load_config()
-
     lang = config.get("settings", {}).get("language", "en")
-
     texts = config.get("texts", {}).get(lang, {})
-
-
-
     if not texts:
-
-        print("Error: Language texts not found in config. Please check your configuration file.")
-
+        print(f"{RED}Error: Language texts not found in config. Please check your configuration file.{NC}")
         sys.exit(1)
-
-
-
     args = sys.argv[1:]
-
-
-
     if not args or "--help" in args:
-
         show_help(texts)
-
         sys.exit(0)
-
-
-
     command = args[0]
-
-
-
     if command == "add":
-
         handle_add(config, texts, args[1:])
-
     elif command == "commit":
-
         handle_commit(config, texts)
-
+    elif command == "push":
+        handle_push(config, texts)
     elif command == "config":
-
         handle_config(args[1:], config, texts)
-
     elif command == "update":
-
         handle_update(config, texts)
-
     elif command == "--version" or command == "-v":
-
         handle_version(config)
-
     else:
-
-        print(f"Error: Unknown command '{command}'")
-
+        print(f"{RED}Error: Unknown command '{command}'{NC}")
         show_help(texts)
-
         sys.exit(1)
-
-
 
 if __name__ == "__main__":
-
     main()

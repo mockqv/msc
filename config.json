@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "repository_url": "https://github.com/mockqv/msc",
   "settings": {
     "language": "en"
@@ -81,7 +81,14 @@
       "attempting_auto_update": "Attempting automatic update...",
       "local_changes_detected": "Local changes detected. Please commit or stash them before updating.",
       "update_complete": "Update complete!",
-      "update_failed": "Automatic update failed. Please update manually."
+      "update_failed": "Automatic update failed. Please update manually.",
+      "usage_push": "Push commits to the remote repository with a safety check.",
+      "push_warning": "⚠️  You are about to push to the '{branch_name}' branch. Are you sure?",
+      "push_confirm_yes": "✅ Yes",
+      "push_confirm_no": "❌ No",
+      "push_cancelled": "Push operation cancelled.",
+      "push_successful": "Push successful!",
+      "push_failed": "Push operation failed."
     },
     "pt": {
       "select_commit_type": "Selecione o tipo de commit:",
@@ -108,7 +115,14 @@
       "attempting_auto_update": "Tentando atualização automática...",
       "local_changes_detected": "Alterações locais detectadas. Por favor, faça commit ou 'stash' delas antes de atualizar.",
       "update_complete": "Atualização completa!",
-      "update_failed": "A atualização automática falhou. Por favor, atualize manually."
+      "update_failed": "A atualização automática falhou. Por favor, atualize manualmente.",
+      "usage_push": "Envia os commits para o repositório remoto com uma verificação de segurança.",
+      "push_warning": "⚠️  Você está prestes a enviar para a branch '{branch_name}'. Tem certeza?",
+      "push_confirm_yes": "✅ Sim",
+      "push_confirm_no": "❌ Não",
+      "push_cancelled": "Operação de push cancelada.",
+      "push_successful": "Push realizado com sucesso!",
+      "push_failed": "A operação de push falhou."
     }
   }
 }
