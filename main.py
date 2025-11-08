@@ -276,17 +276,16 @@ def add_commit_type(config, texts):
 
     commit_type = questionary.text(texts.get('commit_add_type_prompt', "Enter commit type (e.g., feat, fix):")).ask()
     if not commit_type: return
-    
-    # Check if type already exists
-    for item in config.get('commit_types', []):
-        if item.get('value', '').endswith(f" {commit_type}"): # Check if value ends with " type"
-            print(f"{RED}{texts.get('commit_type_exists', 'Commit type already exists.').format(type=commit_type)}{NC}")
-            return
 
-    desc_en = questionary.text(texts.get('commit_add_desc_en_prompt', "Enter English description:")).ask()
-    if not desc_en: return
-    desc_pt = questionary.text(texts.get('commit_add_desc_pt_prompt', "Enter Portuguese description:")).ask()
-    if not desc_pt: return
+    desc_en = questionary.text(texts.get('commit_add_desc_en_prompt', "Enter English description (optional):")).ask()
+    if desc_en is None: return # Handle cancellation
+    if not desc_en:
+        desc_en = texts.get('commit_add_desc_default_en', 'default: none')
+
+    desc_pt = questionary.text(texts.get('commit_add_desc_pt_prompt', "Enter Portuguese description (optional):")).ask()
+    if desc_pt is None: return # Handle cancellation
+    if not desc_pt:
+        desc_pt = texts.get('commit_add_desc_default_pt', 'padrão: nenhuma')
 
     new_item = {
         "value": f"{emoji} {commit_type}",
@@ -343,9 +342,14 @@ def edit_commit_type(config, texts):
     if not new_type: return
 
     new_desc_en = questionary.text(texts.get('commit_add_desc_en_prompt', "Enter English description:"), default=current_desc_en).ask()
-    if not new_desc_en: return
+    if new_desc_en is None: return
+    if not new_desc_en:
+        new_desc_en = texts.get('commit_add_desc_default_en', 'default: none')
+
     new_desc_pt = questionary.text(texts.get('commit_add_desc_pt_prompt', "Enter Portuguese description:"), default=current_desc_pt).ask()
-    if not new_desc_pt: return
+    if new_desc_pt is None: return
+    if not new_desc_pt:
+        new_desc_pt = texts.get('commit_add_desc_default_pt', 'padrão: nenhuma')
 
     updated_item = {
         "value": f"{new_emoji} {new_type}",
