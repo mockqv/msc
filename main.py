@@ -495,6 +495,8 @@ def handle_update(config, texts):
                 print(f"msc has been updated to version {remote_version}.")
             except Exception as e:
                 print(RED + texts.get('update_failed', "Automatic update failed. Please update manually.") + NC)
+                if isinstance(e, subprocess.CalledProcessError):
+                    print(f"{RED}--- Installer Error Output ---\n{e.stderr.decode('utf-8')}{NC}")
         else:
             print(GREEN + texts.get('up_to_date', "You are already using the latest version.") + NC)
     except Exception as e:
