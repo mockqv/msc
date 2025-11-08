@@ -134,9 +134,14 @@ except Exception as e:
 echo "4. Making the main script executable..."
 chmod +x "$MAIN_SCRIPT"
 
-echo "5. Installing the 'msc' command globally..."
-echo "This step requires administrator privileges to copy the script to $INSTALL_DIR."
-sudo cp "$MAIN_SCRIPT" "$INSTALL_DIR/$CMD_NAME"
+echo "5. Installing the 'msc' command..."
+if [ -w "$INSTALL_DIR" ]; then
+    echo "Installing for current user in $INSTALL_DIR..."
+    cp "$MAIN_SCRIPT" "$INSTALL_DIR/$CMD_NAME"
+else
+    echo "Administrator privileges are required to install in $INSTALL_DIR."
+    sudo cp "$MAIN_SCRIPT" "$INSTALL_DIR/$CMD_NAME"
+fi
 
 echo -e "\n${SUCCESS_PREFIX}Installation successful!"
 echo "You can now use the '$CMD_NAME' command from anywhere in your terminal."
