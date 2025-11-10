@@ -551,7 +551,6 @@ def handle_update(config, texts):
 
 def main():
     """Main function to parse arguments and execute commands."""
-    print(f"DEBUG: sys.argv = {sys.argv}") # DEBUG LINE
     config = load_config()
     lang = config.get("settings", {}).get("language", "en")
     texts = config.get("texts", {}).get(lang, {})
