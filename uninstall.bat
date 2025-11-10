@@ -35,7 +35,7 @@ echo.
 
 :: 3. Uninstall the Python dependency
 echo 3. Uninstalling Python dependencies...
-pip uninstall -y questionary --quiet
+py -m pip uninstall -y questionary --quiet
 echo    Dependencies uninstalled.
 echo.
 

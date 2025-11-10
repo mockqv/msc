@@ -33,16 +33,10 @@ if %errorlevel% neq 0 (
 )
 
 :: Check for Python & Pip
-where python >nul 2>nul
+where py >nul 2>nul
 if %errorlevel% neq 0 (
     echo %ERROR_PREFIX%Python is not installed.
     echo Please install Python from python.org and run this installer again.
-    exit /b 1
-)
-where pip >nul 2>nul
-if %errorlevel% neq 0 (
-    echo %ERROR_PREFIX%Pip is not installed.
-    echo Please ensure Python and Pip are in your PATH and run this installer again.
     exit /b 1
 )
 
@@ -51,7 +45,7 @@ echo.
 
 :: --- Main Installation ---
 echo 2. Installing dependencies...
-pip install -r requirements.txt --quiet
+py -m pip install -r requirements.txt --quiet
 echo.
 
 echo 3. Configuring settings...
