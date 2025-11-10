@@ -9,37 +9,17 @@ set "NC=[0m"
 set "ERROR_PREFIX=%RED%X %NC%"
 set "SUCCESS_PREFIX=%GREEN%v %NC%"
 
-:: --- Welcome Message ---
-echo.
-echo ███╗   ███╗   ██████╗    ██████╗
-echo ████╗ ████║  ██╔════╝   ██╔════╝
-echo ██╔████╔██║  ╚█████╗    ██║
-echo ██║╚██╔╝██║   ╚═══██╗   ██║
-echo ██║ ╚═╝ ██║  ██████╔╝   ██╚════╝
-echo ╚═╝     ╚═╝  ╚═════╝    ╚██████╝
-echo.
 echo %CYAN%Welcome to the My Semantic Commit (MSC) installer for Windows!%NC%
 echo.
 
 :: --- Prerequisite Checks ---
 echo 1. Checking for prerequisites...
-
-:: Check for Git
-where git >nul 2>nul
-if %errorlevel% neq 0 (
-    echo %ERROR_PREFIX%Git is not installed. Git is required for this tool to work.
-    echo Please install Git and run this installer again.
-    exit /b 1
-)
-
-:: Check for Python & Pip
 where py >nul 2>nul
 if %errorlevel% neq 0 (
     echo %ERROR_PREFIX%Python is not installed.
     echo Please install Python from python.org and run this installer again.
     exit /b 1
 )
-
 echo %SUCCESS_PREFIX%Prerequisites are satisfied.
 echo.
 
@@ -53,30 +33,18 @@ set "MSC_REPO_PATH=%cd%"
 py setup_config.py
 echo.
 
-echo 4. Creating the 'msc' command in a dedicated directory...
-:: Define a reliable installation directory
-set "INSTALL_DIR=%LOCALAPPDATA%\msc"
+echo 4. Adding 'msc' function to PowerShell profile...
+set "PYTHON_SCRIPT_PATH=%cd%\main.py"
+:: Powershell requires backslashes to be escaped in the function definition string
+set "ESCAPED_PATH=%PYTHON_SCRIPT_PATH:\=\\%"
 
-if not exist "%INSTALL_DIR%" (
-    mkdir "%INSTALL_DIR%"
-)
+set "POWERSHELL_FUNCTION=function msc { py '%ESCAPED_PATH%' $args }"
 
-set "CMD_FILE=%INSTALL_DIR%\msc.bat"
-echo @echo off > "%CMD_FILE%"
-echo echo DEBUG [msc.bat]: All arguments received: %* >> "%CMD_FILE%"
-echo echo DEBUG [msc.bat]: Arg #1: %1 >> "%CMD_FILE%"
-echo echo DEBUG [msc.bat]: Arg #2: %2 >> "%CMD_FILE%"
-echo pause >> "%CMD_FILE%"
-echo py "%cd%\main.py" %* >> "%CMD_FILE%"
-echo %SUCCESS_PREFIX%'msc' command created in '%INSTALL_DIR%'.
-echo.
-
-echo 5. Verifying and updating PATH...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$scriptsPath = '%INSTALL_DIR%'; $currentUserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (-not ($currentUserPath.Split(';') -contains $scriptsPath)) { $newPath = $currentUserPath + ';' + $scriptsPath; [System.Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); echo '%CYAN%SUCCESS: Install directory added to user PATH.%NC%'; echo '%RED%IMPORTANT: Please restart your terminal for the change to take effect.%NC%'; } else { echo '%CYAN%INFO: Install directory already in user PATH.%NC%'; }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$profilePath = $PROFILE; if (-not (Test-Path $profilePath)) { New-Item -Path $profilePath -ItemType File -Force }; $funcDef = '%POWERSHELL_FUNCTION%'; if (-not (Select-String -Path $profilePath -Pattern 'function msc')) { Add-Content -Path $profilePath -Value $funcDef; echo '%SUCCESS_PREFIX%''msc'' function added to your PowerShell profile.'; } else { echo '%CYAN%INFO: ''msc'' function already exists in your PowerShell profile.%NC%'; }"
 echo.
 
 echo %SUCCESS_PREFIX%%GREEN%Installation successful!%NC%
-echo You can now use the 'msc' command from anywhere in your terminal.
+echo %RED%You MUST restart your terminal for the 'msc' command to be available.%NC%
 echo Try running: msc --help
 
 endlocal
