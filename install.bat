@@ -64,6 +64,9 @@ if not defined USER_SCRIPTS (
     exit /b 1
 )
 
+:: --- DEBUG ---
+echo DEBUG: Scripts path found: [%USER_SCRIPTS%]
+
 if not exist "%USER_SCRIPTS%" (
     mkdir "%USER_SCRIPTS%"
 )
@@ -76,18 +79,7 @@ echo %SUCCESS_PREFIX%'msc' command created successfully.
 echo.
 
 echo 5. Verifying and updating PATH...
-:: Check if the user scripts directory is in the PATH
-echo %PATH% | find /i "%USER_SCRIPTS%" >nul
-if %errorlevel% neq 0 (
-    echo %CYAN%Attempting to add the scripts directory to your user PATH...%NC%
-    echo.
-    setx PATH "%PATH%;%USER_SCRIPTS%"
-    echo.
-    echo %RED%IMPORTANT:%NC% The PATH has been updated for future terminal sessions.
-    echo Please close and reopen this terminal for the 'msc' command to work.
-) else (
-    echo %SUCCESS_PREFIX%Scripts directory is already in your PATH.
-)
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$scriptsPath = '%USER_SCRIPTS%'; $currentUserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (-not ($currentUserPath.Split(';') -contains $scriptsPath)) { $newPath = $currentUserPath + ';' + $scriptsPath; [System.Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); echo '%CYAN%SUCCESS: Scripts directory added to user PATH.%NC%'; echo '%RED%IMPORTANT: Please restart your terminal for the change to take effect.%NC%'; } else { echo '%CYAN%INFO: Scripts directory already in user PATH.%NC%'; }"
 echo.
 
 echo %SUCCESS_PREFIX%%GREEN%Installation successful!%NC%
