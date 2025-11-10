@@ -64,7 +64,7 @@ if not exist "%INSTALL_DIR%" (
 set "CMD_FILE=%INSTALL_DIR%\msc.bat"
 (
     echo @echo off
-    echo py "%MSC_REPO_PATH%\main.py" %*
+    echo py "%cd%\main.py" %*
 ) > "%CMD_FILE%"
 echo %SUCCESS_PREFIX%'msc' command created in '%INSTALL_DIR%'.
 echo.
