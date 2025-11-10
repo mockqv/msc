@@ -67,15 +67,17 @@ set "CMD_FILE=%USER_SCRIPTS%\msc.bat"
 echo %SUCCESS_PREFIX%'msc' command created successfully.
 echo.
 
-echo 5. Verifying PATH...
+echo 5. Verifying and updating PATH...
 :: Check if the user scripts directory is in the PATH
 echo %PATH% | find /i "%USER_SCRIPTS%" >nul
 if %errorlevel% neq 0 (
-    echo %RED%Warning: The directory '%USER_SCRIPTS%' is not in your PATH.%NC%
-    echo You will need to add it manually to run 'msc' from anywhere.
-    echo Or, you can restart your terminal, as some Python installers add it on startup.
+    echo %CYAN%Attempting to add the scripts directory to your user PATH...%NC%
+    setx PATH "%%PATH%%;%USER_SCRIPTS%" >nul
+    echo.
+    echo %RED%IMPORTANT:%NC% The PATH has been updated for future terminal sessions.
+    echo Please close and reopen this terminal for the 'msc' command to work.
 ) else (
-    echo %SUCCESS_PREFIX%Scripts directory is in your PATH.
+    echo %SUCCESS_PREFIX%Scripts directory is already in your PATH.
 )
 echo.
 
