@@ -53,33 +53,24 @@ set "MSC_REPO_PATH=%cd%"
 py setup_config.py
 echo.
 
-echo 4. Creating the 'msc' command...
-:: Find user scripts path and create the command
-for /f "delims=" %%i in ('py -m site --user-scripts') do set "USER_SCRIPTS=%%i"
+echo 4. Creating the 'msc' command in a dedicated directory...
+:: Define a reliable installation directory
+set "INSTALL_DIR=%LOCALAPPDATA%\msc"
 
-:: Verify that the path was found
-if not defined USER_SCRIPTS (
-    echo %ERROR_PREFIX%Could not determine Python scripts directory.
-    echo Installation cannot continue.
-    exit /b 1
+if not exist "%INSTALL_DIR%" (
+    mkdir "%INSTALL_DIR%"
 )
 
-:: --- DEBUG ---
-echo DEBUG: Scripts path found: [%USER_SCRIPTS%]
-
-if not exist "%USER_SCRIPTS%" (
-    mkdir "%USER_SCRIPTS%"
-)
-set "CMD_FILE=%USER_SCRIPTS%\msc.bat"
+set "CMD_FILE=%INSTALL_DIR%\msc.bat"
 (
     echo @echo off
     echo py "%MSC_REPO_PATH%\main.py" %*
 ) > "%CMD_FILE%"
-echo %SUCCESS_PREFIX%'msc' command created successfully.
+echo %SUCCESS_PREFIX%'msc' command created in '%INSTALL_DIR%'.
 echo.
 
 echo 5. Verifying and updating PATH...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$scriptsPath = '%USER_SCRIPTS%'; $currentUserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (-not ($currentUserPath.Split(';') -contains $scriptsPath)) { $newPath = $currentUserPath + ';' + $scriptsPath; [System.Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); echo '%CYAN%SUCCESS: Scripts directory added to user PATH.%NC%'; echo '%RED%IMPORTANT: Please restart your terminal for the change to take effect.%NC%'; } else { echo '%CYAN%INFO: Scripts directory already in user PATH.%NC%'; }"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$scriptsPath = '%INSTALL_DIR%'; $currentUserPath = [System.Environment]::GetEnvironmentVariable('Path', 'User'); if (-not ($currentUserPath.Split(';') -contains $scriptsPath)) { $newPath = $currentUserPath + ';' + $scriptsPath; [System.Environment]::SetEnvironmentVariable('Path', $newPath, 'User'); echo '%CYAN%SUCCESS: Install directory added to user PATH.%NC%'; echo '%RED%IMPORTANT: Please restart your terminal for the change to take effect.%NC%'; } else { echo '%CYAN%INFO: Install directory already in user PATH.%NC%'; }"
 echo.
 
 echo %SUCCESS_PREFIX%%GREEN%Installation successful!%NC%
