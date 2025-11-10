@@ -55,14 +55,22 @@ echo.
 
 echo 4. Creating the 'msc' command...
 :: Find user scripts path and create the command
-for /f "delims=" %%i in ('python -m site --user-scripts') do set "USER_SCRIPTS=%%i"
+for /f "delims=" %%i in ('py -m site --user-scripts') do set "USER_SCRIPTS=%%i"
+
+:: Verify that the path was found
+if not defined USER_SCRIPTS (
+    echo %ERROR_PREFIX%Could not determine Python scripts directory.
+    echo Installation cannot continue.
+    exit /b 1
+)
+
 if not exist "%USER_SCRIPTS%" (
     mkdir "%USER_SCRIPTS%"
 )
 set "CMD_FILE=%USER_SCRIPTS%\msc.bat"
 (
     echo @echo off
-    echo python "%MSC_REPO_PATH%\main.py" %*
+    echo py "%MSC_REPO_PATH%\main.py" %*
 ) > "%CMD_FILE%"
 echo %SUCCESS_PREFIX%'msc' command created successfully.
 echo.
@@ -72,7 +80,8 @@ echo 5. Verifying and updating PATH...
 echo %PATH% | find /i "%USER_SCRIPTS%" >nul
 if %errorlevel% neq 0 (
     echo %CYAN%Attempting to add the scripts directory to your user PATH...%NC%
-    setx PATH "%PATH%;%USER_SCRIPTS%" >nul
+    echo.
+    setx PATH "%PATH%;%USER_SCRIPTS%"
     echo.
     echo %RED%IMPORTANT:%NC% The PATH has been updated for future terminal sessions.
     echo Please close and reopen this terminal for the 'msc' command to work.
