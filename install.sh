@@ -106,7 +106,13 @@ def deep_update(d, u):
     return d
 
 # --- Configuration ---
-CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.config', 'msc')
+if os.name == 'nt':
+    # Windows: Use %APPDATA%
+    CONFIG_DIR = os.path.join(os.getenv('APPDATA'), 'msc')
+else:
+    # Linux/macOS: Use ~/.config
+    CONFIG_DIR = os.path.join(os.path.expanduser('~'), '.config', 'msc')
+
 USER_CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 REPO_CONFIG_FILE = 'config.json'
 

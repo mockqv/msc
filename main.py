@@ -7,7 +7,13 @@ import subprocess
 import questionary
 
 # --- Constants ---
-CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "msc")
+if os.name == 'nt':
+    # Windows: Use %APPDATA%
+    CONFIG_DIR = os.path.join(os.getenv('APPDATA'), 'msc')
+else:
+    # Linux/macOS: Use ~/.config
+    CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "msc")
+
 CONFIG_FILE = os.path.join(CONFIG_DIR, "config.json")
 
 # ANSI color codes

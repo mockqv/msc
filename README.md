@@ -30,7 +30,9 @@
 
 ## 🚀 Installation
 
-You can install MSC by cloning this repository and running the installer script.
+You can install MSC by cloning this repository and running the appropriate installer for your system.
+
+### Linux & macOS
 
 ```bash
 # 1. Clone the repository
@@ -43,7 +45,24 @@ cd msc
 bash install.sh
 ```
 
-The installer will add the `msc` command to your system path, making it available globally. It will also ask for your preferred language and create a local configuration file at `~/.config/msc/config.json`.
+The installer will add the `msc` command to your system path, making it available globally.
+
+### Windows
+
+```powershell
+# 1. Clone the repository
+git clone https://github.com/mockqv/msc.git
+
+# 2. Navigate into the directory
+cd msc
+
+# 3. Run the installer
+./install.bat
+```
+
+The installer will create the `msc` command and make it available to your user. You may need to restart your terminal for the command to become available.
+
+It will also ask for your preferred language and create a local configuration file.
 
 ##  usage
 
