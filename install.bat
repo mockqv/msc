@@ -72,7 +72,7 @@ echo 5. Verifying and updating PATH...
 echo %PATH% | find /i "%USER_SCRIPTS%" >nul
 if %errorlevel% neq 0 (
     echo %CYAN%Attempting to add the scripts directory to your user PATH...%NC%
-    setx PATH "%%PATH%%;%USER_SCRIPTS%" >nul
+    setx PATH "%PATH%;%USER_SCRIPTS%" >nul
     echo.
     echo %RED%IMPORTANT:%NC% The PATH has been updated for future terminal sessions.
     echo Please close and reopen this terminal for the 'msc' command to work.
