@@ -33,9 +33,20 @@ fi
 
 # 3. Uninstall the Python dependency
 echo "3. Uninstalling Python dependencies..."
-# The -y flag confirms the uninstallation without a prompt
-pip3 uninstall -y questionary --quiet
-echo "   Dependencies uninstalled."
 
+# Tenta desinstalar normalmente. Se falhar (por causa do PEP 668), tenta com a flag de override.
+if pip3 uninstall -y questionary --quiet 2>/dev/null; then
+    echo "   Dependencies uninstalled."
+else
+    echo "   Externally managed environment detected (Arch/PEP 668)."
+    echo "   Attempting forced removal with --break-system-packages..."
+    
+    # Tenta forçar a remoção e suprime erros caso o pacote nem esteja instalado
+    if pip3 uninstall -y questionary --quiet --break-system-packages 2>/dev/null; then
+        echo "   Dependencies uninstalled (forced)."
+    else
+        echo "   Could not uninstall 'questionary'. It might verify if it is not installed or used by system."
+    fi
+fi
 
 echo -e "\n${SUCCESS_PREFIX}MSC has been successfully uninstalled from your system.${NC}"

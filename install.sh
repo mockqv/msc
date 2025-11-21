@@ -34,8 +34,14 @@ echo "1. Checking for prerequisites..."
 # Check for Git
 if ! command -v git &> /dev/null; then
     echo -e "${ERROR_PREFIX}Git is not installed. Git is required for this tool to work.${NC}"
-    echo "Please install Git and run this installer again."
-    exit 1
+    # Arch/CachyOS check
+    if command -v pacman &> /dev/null; then
+         echo "Detected Arch-based system (pacman). Attempting to install git..."
+         sudo pacman -S --noconfirm git
+    else
+         echo "Please install Git and run this installer again."
+         exit 1
+    fi
 fi
 
 # Check for Python & Pip
@@ -45,8 +51,15 @@ if ! command -v python3 &> /dev/null || ! (command -v pip &> /dev/null || comman
         read -p "Do you want to attempt to install them now? (y/n) " yn
         case $yn in
             [Yy]* )
-                if command -v apt-get &> /dev/null; then
-                    echo "Attempting to install using apt-get. This requires administrator privileges."
+                if command -v pacman &> /dev/null; then
+                    # Arch / CachyOS Support
+                    echo "Detected Arch-based system. Installing dependencies via pacman..."
+                    sudo pacman -S --noconfirm python python-pip
+                    echo "Installation attempt finished. Re-running prerequisite check..."
+                    break
+                elif command -v apt-get &> /dev/null; then
+                    # Debian / Ubuntu Support
+                    echo "Attempting to install using apt-get..."
                     sudo apt-get update
                     sudo apt-get install -y python3 python3-pip
                     echo "Installation attempt finished. Re-running prerequisite check..."
@@ -67,26 +80,24 @@ if ! command -v python3 &> /dev/null || ! (command -v pip &> /dev/null || comman
 fi
 
 # Re-check after potential installation
-if ! command -v python3 &> /dev/null || ! (command -v pip &> /dev/null || command -v pip3 &> /dev/null); then
+if ! command -v python3 &> /dev/null; then
      echo -e "${ERROR_PREFIX}Installation failed or was skipped. Cannot proceed.${NC}"
-     echo "Please install Python 3 and Pip manually, then run this script again."
      exit 1
 fi
 
 echo -e "${SUCCESS_PREFIX}Prerequisites are satisfied.\n"
 
 # --- Main Installation ---
-echo "2. Installing dependencies..."
-pip3 install -r requirements.txt --quiet
+echo "2. Installing Python libraries..."
+# Try installing with break-system-packages if on newer Arch/Python versions managed by pacman
+pip3 install -r requirements.txt --quiet --break-system-packages 2>/dev/null || pip3 install -r requirements.txt --quiet
 
 echo "3. Checking permissions and updating sudo timestamp..."
-# Prompt for sudo password upfront and refresh timestamp
 sudo -v
 
 echo "4. Configuring settings..."
 export MSC_REPO_PATH=$(pwd)
 python3 setup_config.py
-
 
 echo "5. Making the main script executable..."
 chmod +x "$MAIN_SCRIPT"
@@ -99,6 +110,9 @@ else
     sudo cp "$MAIN_SCRIPT" "$INSTALL_DIR/$CMD_NAME"
 fi
 
+# Ensure the destination is executable
+sudo chmod +x "$INSTALL_DIR/$CMD_NAME"
+
 # Load texts for final messages
 FINAL_LANG=$(python3 -c "import json, os; f=open(os.path.join(os.path.expanduser('~'), '.config', 'msc', 'config.json')); d=json.load(f); print(d.get('settings', {}).get('language', 'en'))")
 SUCCESS_MSG=$(python3 -c "import json, os; f=open('config.json'); d=json.load(f); print(d.get('texts', {}).get('$FINAL_LANG', {}).get('installer_success', 'Installation successful!'))")
@@ -108,4 +122,3 @@ TRY_MSG=$(python3 -c "import json, os; f=open('config.json'); d=json.load(f); pr
 echo -e "\n${SUCCESS_PREFIX}${SUCCESS_MSG}"
 echo "${FINISHED_MSG}"
 echo "${TRY_MSG}"
-
